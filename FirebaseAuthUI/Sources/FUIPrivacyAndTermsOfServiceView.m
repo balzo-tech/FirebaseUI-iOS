@@ -19,6 +19,7 @@
 #import <FirebaseAuth/FirebaseAuth.h>
 #import "FirebaseAuthUI/Sources/Public/FirebaseAuthUI/FUIAuth.h"
 #import "FirebaseAuthUI/Sources/Public/FirebaseAuthUI/FUIAuthStrings.h"
+#import "FirebaseAuthUI/Sources/Public/FirebaseAuthUI/FUIAuthStyle.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -62,12 +63,19 @@ NS_ASSUME_NONNULL_BEGIN
       [NSString stringWithFormat:format, termsOfServiceString, privacyPolicyString];
   NSMutableAttributedString *attributedLinkText = nil;
     
-  if (@available(iOS 13.0, *)) {
-    attributedLinkText = [[NSMutableAttributedString alloc] initWithString:privacyPolicyAndTOSString
-                                                                attributes:@{NSForegroundColorAttributeName: [UIColor labelColor]}];
-  } else {
-    attributedLinkText = [[NSMutableAttributedString alloc] initWithString:privacyPolicyAndTOSString];
-  }
+    NSMutableDictionary *attributes = [NSMutableDictionary new];
+    
+    if (authUI.authPickerStyle != nil && authUI.authPickerStyle.privacyTOSTextColor != nil) {
+        attributes[NSForegroundColorAttributeName] = authUI.authPickerStyle.privacyTOSTextColor;
+    } else if (@available(iOS 13.0, *)) {
+        attributes[NSForegroundColorAttributeName] = [UIColor labelColor];
+    }
+    
+    if (authUI.authPickerStyle != nil && authUI.authPickerStyle.privacyTOSFont != nil) {
+        attributes[NSFontAttributeName] = authUI.authPickerStyle.privacyTOSFont;
+    }
+    
+    attributedLinkText = [[NSMutableAttributedString alloc] initWithString:privacyPolicyAndTOSString attributes:attributes];
 
   NSRange TOSRange = [privacyPolicyAndTOSString rangeOfString:termsOfServiceString];
   if (TOSRange.length) {

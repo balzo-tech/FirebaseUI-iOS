@@ -46,45 +46,31 @@ static const CGFloat kDropShadowYOffset = 2.0f;
  */
 static const CGFloat kFontSize = 12.0f;
 
-@implementation FUIAuthSignInButton
+
+@implementation FUIAuthSignInButton {
+    FUIButtonAlignment _buttonAlignment;
+}
 
 - (instancetype)initWithFrame:(CGRect)frame
                         image:(UIImage *)image
                          text:(NSString *)text
               backgroundColor:(UIColor *)backgroundColor
                     textColor:(UIColor *)textColor
+                         font:(nullable UIFont *)font
               buttonAlignment:(FUIButtonAlignment)buttonAlignment {
   self = [super initWithFrame:frame];
   if (!self) {
     return nil;
   }
 
+    _buttonAlignment = buttonAlignment;
   self.backgroundColor = backgroundColor;
   [self setTitle:text forState:UIControlStateNormal];
   [self setTitleColor:textColor forState:UIControlStateNormal];
-  self.titleLabel.font = [UIFont boldSystemFontOfSize:kFontSize];
+  self.titleLabel.font = font ?: [UIFont boldSystemFontOfSize:kFontSize];
   self.titleLabel.lineBreakMode = NSLineBreakByWordWrapping;
   [self setImage:image forState:UIControlStateNormal];
-
-  self.imageEdgeInsets = UIEdgeInsetsMake(0, 0, 0, 10.0);
-    
-//  CGFloat paddingTitle = 8.0f;
-//  CGFloat contentWidth = self.imageView.frame.size.width + paddingTitle + self.titleLabel.frame.size.width;
-//  CGFloat paddingImage = 8.0f;
-//  if (buttonAlignment == FUIButtonAlignmentCenter) {
-//    paddingImage = (frame.size.width - contentWidth) / 2 - 4.0f;
-//  }
-//  BOOL isLTRLayout = [[UIApplication sharedApplication] userInterfaceLayoutDirection] ==
-//      UIUserInterfaceLayoutDirectionLeftToRight;
-//  if (isLTRLayout) {
-//    [self setTitleEdgeInsets:UIEdgeInsetsMake(0, paddingTitle, 0, paddingImage + paddingTitle)];
-//    [self setContentEdgeInsets:UIEdgeInsetsMake(0, paddingImage, 0, -paddingImage - paddingTitle)];
-//    [self setContentHorizontalAlignment:UIControlContentHorizontalAlignmentLeft];
-//  } else {
-//    [self setTitleEdgeInsets:UIEdgeInsetsMake(0, paddingImage + paddingTitle, 0, paddingTitle)];
-//    [self setContentEdgeInsets:UIEdgeInsetsMake(0, -paddingImage - paddingTitle, 0, paddingImage)];
-//    [self setContentHorizontalAlignment:UIControlContentHorizontalAlignmentRight];
-//  }
+  [self setTintColor:textColor];
   
   self.layer.cornerRadius = kCornerRadius;
 
@@ -100,14 +86,41 @@ static const CGFloat kFontSize = 12.0f;
   return self;
 }
 
-- (instancetype)initWithFrame:(CGRect)frame providerUI:(id<FUIAuthProvider>)providerUI {
+- (instancetype)initWithFrame:(CGRect)frame providerUI:(id<FUIAuthProvider>)providerUI font:(nullable UIFont *)font {
   _providerUI = providerUI;
   return [self initWithFrame:frame
                        image:providerUI.icon
                         text:providerUI.signInLabel
              backgroundColor:providerUI.buttonBackgroundColor
                    textColor:providerUI.buttonTextColor
+                        font:font
              buttonAlignment:providerUI.buttonAlignment];
+}
+
+- (void)layoutSubviews {
+  [super layoutSubviews];
+
+    [self updatePadding];
+}
+
+-(void)updatePadding {
+    CGFloat paddingTitle = 8.0f;
+    CGFloat contentWidth = self.imageView.frame.size.width + paddingTitle + self.titleLabel.frame.size.width;
+    CGFloat paddingImage = 8.0f;
+    if (_buttonAlignment == FUIButtonAlignmentCenter) {
+      paddingImage = (self.frame.size.width - contentWidth) / 2 - 4.0f;
+    }
+    BOOL isLTRLayout = [[UIApplication sharedApplication] userInterfaceLayoutDirection] ==
+        UIUserInterfaceLayoutDirectionLeftToRight;
+    if (isLTRLayout) {
+      [self setTitleEdgeInsets:UIEdgeInsetsMake(0, paddingTitle, 0, paddingImage + paddingTitle)];
+      [self setContentEdgeInsets:UIEdgeInsetsMake(0, paddingImage, 0, -paddingImage - paddingTitle)];
+      [self setContentHorizontalAlignment:UIControlContentHorizontalAlignmentLeft];
+    } else {
+      [self setTitleEdgeInsets:UIEdgeInsetsMake(0, paddingImage + paddingTitle, 0, paddingTitle)];
+      [self setContentEdgeInsets:UIEdgeInsetsMake(0, -paddingImage - paddingTitle, 0, paddingImage)];
+      [self setContentHorizontalAlignment:UIControlContentHorizontalAlignmentRight];
+    }
 }
 
 @end

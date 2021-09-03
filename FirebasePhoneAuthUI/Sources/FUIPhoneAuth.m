@@ -107,15 +107,23 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (UIImage *)icon {
-  return [FUIAuthUtils imageNamed:@"ic_phone" fromBundle:[FUIPhoneAuth bundle]];
+  return [[FUIAuthUtils imageNamed:@"ic_phone" fromBundle:[FUIPhoneAuth bundle]] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
 }
 
 - (UIColor *)buttonBackgroundColor {
-  return [UIColor colorWithRed:68.0f/255.0f green:197.0f/255.0f blue:166.0f/255.0f alpha:1.0f];
+    if (_authUI.phoneSignInButtonStyle != nil && _authUI.phoneSignInButtonStyle.backgroundColor != nil) {
+        return _authUI.phoneSignInButtonStyle.backgroundColor;
+    } else {
+        return [UIColor colorWithRed:68.0f/255.0f green:197.0f/255.0f blue:166.0f/255.0f alpha:1.0f];
+    }
 }
 
 - (UIColor *)buttonTextColor {
-  return [UIColor whiteColor];
+    if (_authUI.phoneSignInButtonStyle != nil && _authUI.phoneSignInButtonStyle.textColor != nil) {
+        return _authUI.phoneSignInButtonStyle.textColor;
+    } else {
+        return [UIColor whiteColor];
+    }
 }
 
 - (void)signInWithPresentingViewController:(UIViewController *)presentingViewController {

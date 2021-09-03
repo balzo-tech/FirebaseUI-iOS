@@ -77,7 +77,24 @@ class FUIAuthViewController: UITableViewController {
 
   override func viewDidLoad() {
     super.viewDidLoad()
-
+    
+    let phoneButtonStyle = FUIAuthSignInButtonStyle()
+    phoneButtonStyle.backgroundColor = UIColor.red
+    phoneButtonStyle.textColor = UIColor.blue
+    self.authUI?.phoneSignInButtonStyle = phoneButtonStyle
+    
+    let authPickerStyle = FUIAuthPickerStyle()
+    authPickerStyle.backgroundColor = UIColor.yellow
+    authPickerStyle.headerImage = UIImage(named: "twtrsymbol.png")?.withRenderingMode(.alwaysTemplate)
+    authPickerStyle.headerImageTint = UIColor.red
+    authPickerStyle.titleText = "Welcome Text"
+    authPickerStyle.titleTextColor = UIColor.red
+    authPickerStyle.titleFont = UIFont.systemFont(ofSize: 28.0, weight: .bold)
+    authPickerStyle.signInButtonsFont = UIFont.systemFont(ofSize: 20.0)
+    authPickerStyle.privacyTOSTextColor = UIColor.red
+    authPickerStyle.privacyTOSFont = UIFont.systemFont(ofSize: 14.0)
+    self.authUI?.authPickerStyle = authPickerStyle
+    
     self.authUI?.tosurl = kFirebaseTermsOfService
     self.authUI?.privacyPolicyURL = kFirebasePrivacyPolicy
 

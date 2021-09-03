@@ -28,6 +28,8 @@
 @class FUIPasswordSignUpViewController;
 @class FUIPasswordRecoveryViewController;
 @class FUIPasswordVerificationViewController;
+@class FUIAuthSignInButtonStyle;
+@class FUIAuthPickerStyle;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -224,6 +226,14 @@ __attribute__((deprecated("Instead use authUI:didSignInWithAuthDataResult:error:
  */
 @property(nonatomic, copy, nullable) NSURL *privacyPolicyURL;
 
+
+
+
+@property(nonatomic, copy, nullable) FUIAuthSignInButtonStyle *phoneSignInButtonStyle;
+@property(nonatomic, copy, nullable) FUIAuthPickerStyle *authPickerStyle;
+
+
+
 /** @property delegate
     @brief A delegate that receives callbacks or provides custom UI for @c FUIAuth.
  */
@@ -271,3 +281,4 @@ __attribute__((deprecated("Instead use authUI:didSignInWithAuthDataResult:error:
 @end
 
 NS_ASSUME_NONNULL_END
+

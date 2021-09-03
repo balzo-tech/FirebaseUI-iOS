@@ -25,6 +25,7 @@
 #import "FirebaseAuthUI/Sources/Public/FirebaseAuthUI/FUIAuthUtils.h"
 #import "FirebaseAuthUI/Sources/Public/FirebaseAuthUI/FUIAuth_Internal.h"
 #import "FirebaseAuthUI/Sources/Public/FirebaseAuthUI/FUIPrivacyAndTermsOfServiceView.h"
+#import "FirebaseAuthUI/Sources/Public/FirebaseAuthUI/FUIAuthStyle.h"
 
 /** @var kSignInButtonHorizontalMargins
     @brief The horizontal margin between sign in buttons and the leading and trailing margins of the content view.
@@ -54,7 +55,7 @@ static const CGFloat kButtonContainerTopMargin = 16.0f;
 /** @var kTOSViewBottomMargin
     @brief The margin between privacy policy and TOS view and the bottom of the content view.
  */
-static const CGFloat kTOSViewBottomMargin = 24.0f;
+static const CGFloat kTOSViewBottomMargin = 48.0f;
 
 /** @var kTOSViewHorizontalMargin
     @brief The margin between privacy policy and TOS view and the left or right of the content view.
@@ -116,40 +117,71 @@ static const CGFloat kTOSViewHorizontalMargin = 16.0f;
                                        style:UIBarButtonItemStylePlain
                                       target:nil
                                       action:nil];
-
-  NSInteger numberOfButtons = self.authUI.providers.count;
-
-  CGFloat buttonContainerViewHeight =
-      kSignInButtonHeight * numberOfButtons + kSignInButtonVerticalMargin * (numberOfButtons);
-  CGRect buttonContainerViewFrame = CGRectMake(kSignInButtonHorizontalMargins,
-                                               0,
-                                               self.view.frame.size.width - kSignInButtonHorizontalMargins * 2.0,
-                                               buttonContainerViewHeight);
-  _buttonContainerView = [[UIView alloc] initWithFrame:buttonContainerViewFrame];
-  if (_scrollView) {
-    [_contentView addSubview:_buttonContainerView];
-  } else {
-    // For backward compatibility. The old auth picker view does not have a scroll view and its
-    // customized class put the button container view directly into self.view.
-    [self.view addSubview:_buttonContainerView];
-  }
-
-  CGRect buttonFrame = CGRectMake(0, 0, _buttonContainerView.frame.size.width, kSignInButtonHeight);
-  for (id<FUIAuthProvider> providerUI in self.authUI.providers) {
-    UIButton *providerButton =
-        [[FUIAuthSignInButton alloc] initWithFrame:buttonFrame providerUI:providerUI];
-    [providerButton addTarget:self
-                       action:@selector(didTapSignInButton:)
-             forControlEvents:UIControlEventTouchUpInside];
-    [_buttonContainerView addSubview:providerButton];
-
-    // Make the frame for the new button.
-    buttonFrame.origin.y += (kSignInButtonHeight + kSignInButtonVerticalMargin);
-  }
-
-  _privacyPolicyAndTOSView.authUI = self.authUI;
-  [_privacyPolicyAndTOSView useFullMessage];
-  [_contentView bringSubviewToFront:_privacyPolicyAndTOSView];
+    
+    if (self.authUI.authPickerStyle) {
+        self.view.backgroundColor = self.authUI.authPickerStyle.backgroundColor;
+        _contentView.backgroundColor = UIColor.clearColor;
+    }
+    
+    UIStackView *stackView = [UIStackView new];
+    stackView.axis = UILayoutConstraintAxisVertical;
+    stackView.spacing = 50;
+    [_scrollView addSubview: stackView];
+    
+    stackView.translatesAutoresizingMaskIntoConstraints = NO;
+    NSLayoutConstraint *horizontalConstraint = [NSLayoutConstraint constraintWithItem:stackView attribute:NSLayoutAttributeCenterX relatedBy:NSLayoutRelationEqual toItem:_scrollView attribute:NSLayoutAttributeCenterX multiplier:1 constant:0];
+    NSLayoutConstraint *topConstraint = [NSLayoutConstraint constraintWithItem:stackView attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:_scrollView attribute:NSLayoutAttributeTop multiplier:1 constant:170];
+    NSLayoutConstraint *bottomConstraint = [NSLayoutConstraint constraintWithItem:stackView attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:_scrollView attribute:NSLayoutAttributeBottom multiplier:1 constant:100];
+    NSLayoutConstraint *leadingConstraint = [NSLayoutConstraint constraintWithItem:stackView attribute:NSLayoutAttributeLeading relatedBy:NSLayoutRelationEqual toItem:_scrollView attribute:NSLayoutAttributeLeading multiplier:1 constant:32];
+    NSLayoutConstraint *trailingConstraint = [NSLayoutConstraint constraintWithItem:stackView attribute:NSLayoutAttributeTrailing relatedBy:NSLayoutRelationEqual toItem:_scrollView attribute:NSLayoutAttributeTrailing multiplier:1 constant:-32];
+    [_scrollView addConstraints:@[horizontalConstraint, topConstraint, leadingConstraint, trailingConstraint, bottomConstraint]];
+    
+    if ([[self.authUI authPickerStyle] headerImage] != nil) {
+        UIImageView *headerImageView = [UIImageView new];
+        headerImageView.contentMode = UIViewContentModeScaleAspectFit;
+        headerImageView.image = [[self.authUI authPickerStyle] headerImage];
+        headerImageView.tintColor = [[self.authUI authPickerStyle] headerImageTint];
+        [stackView addArrangedSubview: headerImageView];
+        
+        headerImageView.translatesAutoresizingMaskIntoConstraints = NO;
+        NSLayoutConstraint *heightConstraint = [NSLayoutConstraint constraintWithItem:headerImageView attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1 constant:92];
+        [headerImageView addConstraint: heightConstraint];
+    }
+    
+    if ([[self.authUI authPickerStyle] titleText] != nil) {
+        UILabel *titleText = [UILabel new];
+        titleText.text = [[self.authUI authPickerStyle] titleText];
+        titleText.numberOfLines = 0;
+        titleText.textAlignment = NSTextAlignmentCenter;
+        titleText.font = [[self.authUI authPickerStyle] titleFont];
+        titleText.textColor = [[self.authUI authPickerStyle] titleTextColor];
+        [stackView addArrangedSubview: titleText];
+    }
+    
+    UIStackView *buttonsStackView = [UIStackView new];
+    buttonsStackView.axis = UILayoutConstraintAxisVertical;
+    buttonsStackView.spacing = kSignInButtonVerticalMargin;
+    [stackView addArrangedSubview: buttonsStackView];
+    
+    
+    for (id<FUIAuthProvider> providerUI in self.authUI.providers) {
+        providerUI.buttonAlignment = FUIButtonAlignmentCenter;
+        UIFont *font = [[self.authUI authPickerStyle] signInButtonsFont];
+        UIButton *providerButton =
+        [[FUIAuthSignInButton alloc] initWithFrame:CGRectZero providerUI:providerUI font: font];
+        [providerButton addTarget:self
+                           action:@selector(didTapSignInButton:)
+                 forControlEvents:UIControlEventTouchUpInside];
+        [buttonsStackView addArrangedSubview:providerButton];
+        
+        providerButton.translatesAutoresizingMaskIntoConstraints = NO;
+        NSLayoutConstraint *heightConstraint = [NSLayoutConstraint constraintWithItem:providerButton attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1 constant:44];
+        [providerButton addConstraint: heightConstraint];
+    }
+    
+    _privacyPolicyAndTOSView.authUI = self.authUI;
+    [_privacyPolicyAndTOSView useFullMessage];
+    [_contentView bringSubviewToFront:_privacyPolicyAndTOSView];
 }
 
 - (void)viewDidLayoutSubviews {

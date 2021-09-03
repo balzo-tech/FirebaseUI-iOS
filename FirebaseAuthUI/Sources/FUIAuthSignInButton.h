@@ -48,12 +48,14 @@ NS_ASSUME_NONNULL_BEGIN
     @param text Button text.
     @param backgroundColor Background color of the button in the normal state.
     @param textColor Color of the button text.
+    @param font Font of the button text.
  */
 - (id)initWithFrame:(CGRect)frame
               image:(UIImage *)image
                text:(NSString *)text
     backgroundColor:(UIColor *)backgroundColor
           textColor:(UIColor *)textColor
+               font:(nullable UIFont *)font
     buttonAlignment:(FUIButtonAlignment)buttonAlignment NS_DESIGNATED_INITIALIZER;
 
 /** @fn initWithFrame:providerUI:
@@ -61,7 +63,7 @@ NS_ASSUME_NONNULL_BEGIN
     @param frame The initial frame for the button.
     @param providerUI The provider UI instance associated with this button.
  */
-- (id)initWithFrame:(CGRect)frame providerUI:(id<FUIAuthProvider>)providerUI;
+- (id)initWithFrame:(CGRect)frame providerUI:(id<FUIAuthProvider>)providerUI font:(nullable UIFont *)font;
 
 @end
 
