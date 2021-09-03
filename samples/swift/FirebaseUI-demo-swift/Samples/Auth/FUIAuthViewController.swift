@@ -15,7 +15,6 @@
 //
 
 import UIKit
-import Firebase
 import FirebaseEmailAuthUI
 import FirebaseFacebookAuthUI
 import FirebaseAnonymousAuthUI

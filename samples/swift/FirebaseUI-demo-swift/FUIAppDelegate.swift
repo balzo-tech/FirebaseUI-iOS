@@ -15,7 +15,7 @@
 //
 
 import UIKit
-import Firebase
+import FirebaseCore
 import FirebaseAuthUI
 import GTMSessionFetcher
 

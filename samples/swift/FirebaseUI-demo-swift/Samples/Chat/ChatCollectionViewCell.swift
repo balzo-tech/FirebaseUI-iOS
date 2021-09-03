@@ -15,7 +15,7 @@
 //
 
 import UIKit
-import Firebase
+import FirebaseAuth
 
 /// Displays an individual chat message inside of a ChatViewController.
 class ChatCollectionViewCell: UICollectionViewCell {
