@@ -26,15 +26,15 @@
 #import "FirebaseAuthUI/Sources/Public/FirebaseAuthUI/FUIAuth_Internal.h"
 #import "FirebaseAuthUI/Sources/Public/FirebaseAuthUI/FUIPrivacyAndTermsOfServiceView.h"
 
-/** @var kSignInButtonWidth
-    @brief The width of the sign in buttons.
+/** @var kSignInButtonHorizontalMargins
+    @brief The horizontal margin between sign in buttons and the leading and trailing margins of the content view.
  */
-static const CGFloat kSignInButtonWidth = 220.0f;
+static const CGFloat kSignInButtonHorizontalMargins = 32.0f;
 
 /** @var kSignInButtonHeight
     @brief The height of the sign in buttons.
  */
-static const CGFloat kSignInButtonHeight = 40.0f;
+static const CGFloat kSignInButtonHeight = 44.0f;
 
 /** @var kSignInButtonVerticalMargin
     @brief The vertical margin between sign in buttons.
@@ -121,7 +121,10 @@ static const CGFloat kTOSViewHorizontalMargin = 16.0f;
 
   CGFloat buttonContainerViewHeight =
       kSignInButtonHeight * numberOfButtons + kSignInButtonVerticalMargin * (numberOfButtons);
-  CGRect buttonContainerViewFrame = CGRectMake(0, 0, kSignInButtonWidth, buttonContainerViewHeight);
+  CGRect buttonContainerViewFrame = CGRectMake(kSignInButtonHorizontalMargins,
+                                               0,
+                                               self.view.frame.size.width - kSignInButtonHorizontalMargins * 2.0,
+                                               buttonContainerViewHeight);
   _buttonContainerView = [[UIView alloc] initWithFrame:buttonContainerViewFrame];
   if (_scrollView) {
     [_contentView addSubview:_buttonContainerView];
@@ -131,7 +134,7 @@ static const CGFloat kTOSViewHorizontalMargin = 16.0f;
     [self.view addSubview:_buttonContainerView];
   }
 
-  CGRect buttonFrame = CGRectMake(0, 0, kSignInButtonWidth, kSignInButtonHeight);
+  CGRect buttonFrame = CGRectMake(0, 0, _buttonContainerView.frame.size.width, kSignInButtonHeight);
   for (id<FUIAuthProvider> providerUI in self.authUI.providers) {
     UIButton *providerButton =
         [[FUIAuthSignInButton alloc] initWithFrame:buttonFrame providerUI:providerUI];

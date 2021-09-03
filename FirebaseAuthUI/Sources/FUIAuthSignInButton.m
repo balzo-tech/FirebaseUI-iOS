@@ -24,7 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 /** @var kCornerRadius
     @brief Corner radius of the button.
  */
-static const int kCornerRadius = 2.0f;
+static const int kCornerRadius = 6.0f;
 
 /** @var kDropShadowAlpha
     @brief Opacity of the drop shadow of the button.
@@ -66,25 +66,25 @@ static const CGFloat kFontSize = 12.0f;
   self.titleLabel.lineBreakMode = NSLineBreakByWordWrapping;
   [self setImage:image forState:UIControlStateNormal];
 
-  CGFloat paddingTitle = 8.0f;
-  CGFloat contentWidth = self.imageView.frame.size.width + paddingTitle + self.titleLabel.frame.size.width;
-  CGFloat paddingImage = 8.0f;
-  if (buttonAlignment == FUIButtonAlignmentCenter) {
-    paddingImage = (frame.size.width - contentWidth) / 2 - 4.0f;
-  }
-  BOOL isLTRLayout = [[UIApplication sharedApplication] userInterfaceLayoutDirection] ==
-      UIUserInterfaceLayoutDirectionLeftToRight;
-  if (isLTRLayout) {
-    [self setTitleEdgeInsets:UIEdgeInsetsMake(0, paddingTitle, 0, paddingImage + paddingTitle)];
-    [self setContentEdgeInsets:UIEdgeInsetsMake(0, paddingImage, 0, -paddingImage - paddingTitle)];
-    [self setContentHorizontalAlignment:UIControlContentHorizontalAlignmentLeft];
-  } else {
-    [self setTitleEdgeInsets:UIEdgeInsetsMake(0, paddingImage + paddingTitle, 0, paddingTitle)];
-    [self setContentEdgeInsets:UIEdgeInsetsMake(0, -paddingImage - paddingTitle, 0, paddingImage)];
-    [self setContentHorizontalAlignment:UIControlContentHorizontalAlignmentRight];
-  }
-  
-  
+  self.imageEdgeInsets = UIEdgeInsetsMake(0, 0, 0, 10.0);
+    
+//  CGFloat paddingTitle = 8.0f;
+//  CGFloat contentWidth = self.imageView.frame.size.width + paddingTitle + self.titleLabel.frame.size.width;
+//  CGFloat paddingImage = 8.0f;
+//  if (buttonAlignment == FUIButtonAlignmentCenter) {
+//    paddingImage = (frame.size.width - contentWidth) / 2 - 4.0f;
+//  }
+//  BOOL isLTRLayout = [[UIApplication sharedApplication] userInterfaceLayoutDirection] ==
+//      UIUserInterfaceLayoutDirectionLeftToRight;
+//  if (isLTRLayout) {
+//    [self setTitleEdgeInsets:UIEdgeInsetsMake(0, paddingTitle, 0, paddingImage + paddingTitle)];
+//    [self setContentEdgeInsets:UIEdgeInsetsMake(0, paddingImage, 0, -paddingImage - paddingTitle)];
+//    [self setContentHorizontalAlignment:UIControlContentHorizontalAlignmentLeft];
+//  } else {
+//    [self setTitleEdgeInsets:UIEdgeInsetsMake(0, paddingImage + paddingTitle, 0, paddingTitle)];
+//    [self setContentEdgeInsets:UIEdgeInsetsMake(0, -paddingImage - paddingTitle, 0, paddingImage)];
+//    [self setContentHorizontalAlignment:UIControlContentHorizontalAlignmentRight];
+//  }
   
   self.layer.cornerRadius = kCornerRadius;
 
