@@ -22,6 +22,7 @@
 #import <FirebaseAuthUI/FirebaseAuthUI.h>
 
 #import "FirebasePhoneAuthUI/Sources/Public/FirebasePhoneAuthUI/FUIPhoneAuth.h"
+#import "FirebasePhoneAuthUI/Sources/Public/FirebasePhoneAuthUI/FUIPhoneAuthStyle.h"
 #import "FirebasePhoneAuthUI/Sources/FUICountryTableViewController.h"
 #import "FirebasePhoneAuthUI/Sources/FUIFeatureSwitch.h"
 #import "FirebasePhoneAuthUI/Sources/FUIPhoneAuthStrings.h"
@@ -53,6 +54,8 @@ static NSString *const kPhoneNumberCellAccessibilityID = @"PhoneNumberCellAccess
  */
 static NSString *const kNextButtonAccessibilityID = @"NextButtonAccessibilityID";
 
+static const CGFloat kNextButtonInset = 16.0f;
+
 @interface FUIPhoneEntryViewController () <UITextFieldDelegate,
                                            UITabBarDelegate,
                                            UITableViewDataSource,
@@ -71,6 +74,9 @@ static NSString *const kNextButtonAccessibilityID = @"NextButtonAccessibilityID"
   __weak IBOutlet FUIPrivacyAndTermsOfServiceView *_tosView;
   FUICountryCodes *_countryCodes;
   FUIPhoneNumber *_phoneNumber;
+    FUIPhoneEntryStyle *_phoneEntryStyle;
+    NSLayoutConstraint *_nextButtonBottomConstraint;
+    UIButton *_nextButton;
 }
 
 - (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil
@@ -111,7 +117,7 @@ static NSString *const kNextButtonAccessibilityID = @"NextButtonAccessibilityID"
                          bundle:nibBundleOrNil
                          authUI:authUI];
   if (self) {
-    self.title = FUIPhoneAuthLocalizedString(kPAStr_EnterPhoneTitle);
+      self.title = [_phoneEntryStyle navigationBarTitleText] ?: FUIPhoneAuthLocalizedString(kPAStr_EnterPhoneTitle);
     _countryCodes = countryCodes ?: [[FUICountryCodes alloc] init];
     if (phoneNumber.length) {
       _phoneNumber = [[FUIPhoneNumber alloc] initWithNormalizedPhoneNumber:phoneNumber
@@ -125,14 +131,19 @@ static NSString *const kNextButtonAccessibilityID = @"NextButtonAccessibilityID"
 
 - (void)viewDidLoad {
   [super viewDidLoad];
-  UIBarButtonItem *nextButtonItem =
-      [FUIAuthBaseViewController barItemWithTitle:FUIPhoneAuthLocalizedString(kPAStr_Verify)
-                                           target:self
-                                           action:@selector(next)];  
-  nextButtonItem.accessibilityIdentifier = kNextButtonAccessibilityID;
-  self.navigationItem.rightBarButtonItem = nextButtonItem;
+    
+    _phoneEntryStyle = [[self authUI] phoneEntryStyle];
+    
+    if ([_phoneEntryStyle nextButtonImage] == nil) {
+        UIBarButtonItem *nextButtonItem =
+        [FUIAuthBaseViewController barItemWithTitle:FUIPhoneAuthLocalizedString(kPAStr_Verify)
+                                             target:self
+                                             action:@selector(next)];
+        nextButtonItem.accessibilityIdentifier = kNextButtonAccessibilityID;
+        self.navigationItem.rightBarButtonItem = nextButtonItem;
+    }
 
-  NSString *backLabel = FUIPhoneAuthLocalizedString(kPAStr_Back);
+  NSString *backLabel = [_phoneEntryStyle navigationBarBackText] ?: FUIPhoneAuthLocalizedString(kPAStr_Back);
   UIBarButtonItem *backItem = [[UIBarButtonItem alloc] initWithTitle:backLabel
                                                                style:UIBarButtonItemStylePlain
                                                               target:nil
@@ -142,28 +153,55 @@ static NSString *const kNextButtonAccessibilityID = @"NextButtonAccessibilityID"
   [_tosView useFullMessageWithSMSRateTerm];
 
   [self enableDynamicCellHeightForTableView:_tableView];
+    
+    if (_phoneEntryStyle != nil) {
+        [_tosView setHidden:!_phoneEntryStyle.showPrivacyPolicy];
+        if ([_phoneEntryStyle backgroundColor] != nil) {
+            self.view.backgroundColor = _phoneEntryStyle.backgroundColor;
+            _tableView.backgroundColor = _phoneEntryStyle.backgroundColor;
+        }
+        if (_phoneEntryStyle.showPrivacyPolicy == NO) {
+            _tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+        }
+        if (_phoneEntryStyle.nextButtonImage != nil) {
+            _nextButton = [UIButton new];
+            [_nextButton setImage:_phoneEntryStyle.nextButtonImage forState:UIControlStateNormal];
+            if (_phoneEntryStyle.nextButtonDisabledImage != nil) {
+                [_nextButton setImage:_phoneEntryStyle.nextButtonDisabledImage forState:UIControlStateDisabled];
+            }
+            [self.view addSubview:_nextButton];
+            [_nextButton addTarget:self action:@selector(next) forControlEvents:UIControlEventTouchUpInside];
+            _nextButton.translatesAutoresizingMaskIntoConstraints = NO;
+            _nextButtonBottomConstraint = [NSLayoutConstraint constraintWithItem:_nextButton attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self.view attribute:NSLayoutAttributeBottom multiplier:1 constant:kNextButtonInset];
+            NSLayoutConstraint *trailingConstraint = [NSLayoutConstraint constraintWithItem:_nextButton attribute:NSLayoutAttributeTrailing relatedBy:NSLayoutRelationEqual toItem:self.view attribute:NSLayoutAttributeTrailing multiplier:1 constant:-kNextButtonInset];
+            [self.view addConstraints:@[_nextButtonBottomConstraint, trailingConstraint]];
+        }
+    }
 }
 
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
-
   if (self.navigationController.viewControllers.firstObject == self) {
     if (self.authUI.providers.count != 1){
       UIBarButtonItem *cancelBarButton =
-         [[UIBarButtonItem alloc] initWithTitle:FUILocalizedString(kStr_Back)
+        [[UIBarButtonItem alloc] initWithTitle:[_phoneEntryStyle navigationBarBackText] ?: FUILocalizedString(kStr_Back)
                                        style:UIBarButtonItemStylePlain
                                       target:self
                                       action:@selector(cancelAuthorization)];
       self.navigationItem.leftBarButtonItem = cancelBarButton;
     } else if (!self.authUI.shouldHideCancelButton) {
-      UIBarButtonItem *cancelBarButton =
-          [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
-                                                        target:self
-                                                        action:@selector(cancelAuthorization)];
-      self.navigationItem.leftBarButtonItem = cancelBarButton;
+        UIBarButtonItem *cancelBarButton;
+        if ([_phoneEntryStyle navigationBarCancelImage] != nil) {
+            cancelBarButton = [[UIBarButtonItem alloc] initWithImage:_phoneEntryStyle.navigationBarCancelImage style:UIBarButtonItemStylePlain target:self action:@selector(cancelAuthorization)];
+        } else {
+            cancelBarButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
+                                                                            target:self
+                                                                            action:@selector(cancelAuthorization)];
+        }
+        self.navigationItem.leftBarButtonItem = cancelBarButton;
     }
     self.navigationItem.backBarButtonItem =
-        [[UIBarButtonItem alloc] initWithTitle:FUILocalizedString(kStr_Back)
+        [[UIBarButtonItem alloc] initWithTitle:[_phoneEntryStyle navigationBarBackText] ?: FUILocalizedString(kStr_Back)
                                          style:UIBarButtonItemStylePlain
                                         target:nil
                                         action:nil];
@@ -173,7 +211,31 @@ static NSString *const kNextButtonAccessibilityID = @"NextButtonAccessibilityID"
         self.modalInPresentation = YES;
       }
     }
+      if ([_phoneEntryStyle navigationBarColor] != nil) {
+          [self.navigationController.navigationBar setTranslucent: NO];
+          self.navigationController.navigationBar.backgroundColor = _phoneEntryStyle.navigationBarColor;
+          self.navigationController.navigationBar.barTintColor = _phoneEntryStyle.navigationBarColor;
+      }
+      if ([_phoneEntryStyle navigationBarTintColor] != nil) {
+          self.navigationController.navigationBar.tintColor = _phoneEntryStyle.navigationBarTintColor;
+      }
+      NSMutableDictionary<NSAttributedStringKey, id> *titleTextAttributes = [NSMutableDictionary new];
+      if ([_phoneEntryStyle navigationBarTitleColor] != nil) {
+          [titleTextAttributes setObject:[_phoneEntryStyle navigationBarTitleColor] forKey:NSForegroundColorAttributeName];
+      }
+      if ([_phoneEntryStyle navigationBarTitleFont] != nil) {
+          [titleTextAttributes setObject:[_phoneEntryStyle navigationBarTitleFont] forKey:NSFontAttributeName];
+      }
+      self.navigationController.navigationBar.titleTextAttributes = titleTextAttributes;
   }
+    [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
+    [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
+}
+
+- (void)viewDidDisappear:(BOOL)animated {
+    [super viewDidDisappear:animated];
+    [NSNotificationCenter.defaultCenter removeObserver:self name:UIKeyboardWillShowNotification object:nil];
+    [NSNotificationCenter.defaultCenter removeObserver:self name:UIKeyboardWillHideNotification object:nil];
 }
 
 #pragma mark - Actions
@@ -190,7 +252,7 @@ static NSString *const kNextButtonAccessibilityID = @"NextButtonAccessibilityID"
 
   [_phoneNumberField resignFirstResponder];
   [self incrementActivity];
-  self.navigationItem.rightBarButtonItem.enabled = NO;
+    [self setNextButtonEnabled: NO];
   FIRPhoneAuthProvider *provider = [FIRPhoneAuthProvider providerWithAuth:self.auth];
   NSString *selectedCountryCodeString =
     [NSString stringWithFormat:@"+%@", _selectedCountryCode.dialCode];
@@ -209,7 +271,7 @@ static NSString *const kNextButtonAccessibilityID = @"NextButtonAccessibilityID"
     // TODO: Remove temporary workaround when the issue is fixed in FirebaseAuth.
     dispatch_block_t completionBlock = ^() {
       [self decrementActivity];
-      self.navigationItem.rightBarButtonItem.enabled = YES;
+        [self setNextButtonEnabled: YES];
 
       if (error) {
         [self->_phoneNumberField becomeFirstResponder];
@@ -247,7 +309,29 @@ static NSString *const kNextButtonAccessibilityID = @"NextButtonAccessibilityID"
 }
 
 - (void)didChangePhoneNumber:(NSString *)phoneNumber {
-  self.navigationItem.rightBarButtonItem.enabled = (phoneNumber.length > 0);
+    [self setNextButtonEnabled: (phoneNumber.length > 0)];
+}
+
+- (void)setNextButtonEnabled:(BOOL)enabled {
+    self.navigationItem.rightBarButtonItem.enabled = enabled;
+    [_nextButton setEnabled:enabled];
+}
+
+- (void)keyboardWillShow:(NSNotification *)notification {
+    if (notification.userInfo != nil) {
+        
+        CGFloat height = [self keyboardHeightFromUserInfo:notification.userInfo];
+        NSTimeInterval duration = [self keyboardAnimationDurationFromUserInfo:notification.userInfo];
+        [self keyboardWillShowWithHeight:height duration:duration];
+    }
+}
+
+- (void)keyboardWillHide:(NSNotification *)notification {
+    if (notification.userInfo != nil) {
+        
+        NSTimeInterval duration = [self keyboardAnimationDurationFromUserInfo:notification.userInfo];
+        [self keyboardWillHideWithDuration:duration];
+    }
 }
 
 #pragma mark - UITableViewDataSource
@@ -266,17 +350,58 @@ static NSString *const kNextButtonAccessibilityID = @"NextButtonAccessibilityID"
     cell = [tableView dequeueReusableCellWithIdentifier:kCellReuseIdentifier];
   }
   if (indexPath.row == FUIPhoneEntryRowCountrySelector) {
-    cell.label.text = FUIPhoneAuthLocalizedString(kPAStr_Country);
+      if ([_phoneEntryStyle textFieldBackgroundColor] != nil) {
+          cell.backgroundColor = [_phoneEntryStyle textFieldBackgroundColor];
+      }
+    cell.label.text = [_phoneEntryStyle countryTextFieldDescriptionText] ?: FUIPhoneAuthLocalizedString(kPAStr_Country);
+      if ([_phoneEntryStyle textFieldDescriptionColor] != nil) {
+          cell.label.textColor = [_phoneEntryStyle textFieldDescriptionColor];
+      }
+      if ([_phoneEntryStyle textFieldDescriptionFont] != nil) {
+          cell.label.font = [_phoneEntryStyle textFieldDescriptionFont];
+      }
+      if ([_phoneEntryStyle textFieldTextColor] != nil) {
+          cell.textField.textColor = [_phoneEntryStyle textFieldTextColor];
+      }
+      if ([_phoneEntryStyle textFieldTextFont] != nil) {
+          cell.textField.font = [_phoneEntryStyle textFieldTextFont];
+      }
     cell.textField.enabled = NO;
+      if ([_phoneEntryStyle textFieldDisclosureIndicatorImage] != nil) {
+          cell.accessoryView = [[UIImageView alloc] initWithImage:[_phoneEntryStyle textFieldDisclosureIndicatorImage]];
+      }
     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
     _countryCodeField = cell.textField;
     [self setCountryCodeValue];
   } else if (indexPath.row == FUIPhoneEntryRowPhoneNumber) {
+      if ([_phoneEntryStyle textFieldBackgroundColor] != nil) {
+          cell.backgroundColor = [_phoneEntryStyle textFieldBackgroundColor];
+      }
     cell.accessoryType = UITableViewCellAccessoryNone;
-    cell.label.text = FUIPhoneAuthLocalizedString(kPAStr_PhoneNumber);
+      cell.label.text = [_phoneEntryStyle phoneTextFieldDescriptionText] ?: FUIPhoneAuthLocalizedString(kPAStr_PhoneNumber);
+      if ([_phoneEntryStyle textFieldDescriptionColor] != nil) {
+          cell.label.textColor = [_phoneEntryStyle textFieldDescriptionColor];
+      }
+      if ([_phoneEntryStyle textFieldDescriptionFont] != nil) {
+          cell.label.font = [_phoneEntryStyle textFieldDescriptionFont];
+      }
+      if ([_phoneEntryStyle textFieldTextColor] != nil) {
+          cell.textField.textColor = [_phoneEntryStyle textFieldTextColor];
+      }
+      if ([_phoneEntryStyle textFieldTextFont] != nil) {
+          cell.textField.font = [_phoneEntryStyle textFieldTextFont];
+      }
     cell.textField.enabled = YES;
     cell.textField.clearButtonMode = UITextFieldViewModeWhileEditing;
-    cell.textField.placeholder = FUIPhoneAuthLocalizedString(kPAStr_EnterYourPhoneNumber);
+      NSMutableDictionary<NSAttributedStringKey, id> *placeholderTextAttributes = [NSMutableDictionary new];
+      if ([_phoneEntryStyle textFieldPlaceholderColor] != nil) {
+          [placeholderTextAttributes setObject:[_phoneEntryStyle textFieldPlaceholderColor] forKey:NSForegroundColorAttributeName];
+      }
+      if ([_phoneEntryStyle textFieldPlaceholderFont] != nil) {
+          [placeholderTextAttributes setObject:[_phoneEntryStyle textFieldPlaceholderFont] forKey:NSFontAttributeName];
+      }
+      NSString *placeholderText = [_phoneEntryStyle phoneTextFieldPlaceholderText] ?: FUIPhoneAuthLocalizedString(kPAStr_EnterYourPhoneNumber);
+      cell.textField.attributedPlaceholder = [[NSAttributedString alloc] initWithString:placeholderText attributes:placeholderTextAttributes];
     cell.textField.delegate = self;
     cell.accessibilityIdentifier = kPhoneNumberCellAccessibilityID;
     _phoneNumberField = cell.textField;
@@ -366,6 +491,54 @@ static NSString *const kNextButtonAccessibilityID = @"NextButtonAccessibilityID"
       [self showAlertWithMessage:error.localizedDescription];
     }
   }];
+}
+
+-(CGFloat) keyboardHeightFromUserInfo:(NSDictionary *)userInfo {
+    NSValue *value = [userInfo objectForKey:UIKeyboardFrameEndUserInfoKey];
+    if (value != nil) {
+        return [value CGRectValue].size.height;
+    } else {
+        return 0.0;
+    }
+}
+
+-(NSTimeInterval) keyboardAnimationDurationFromUserInfo:(NSDictionary *)userInfo {
+    NSNumber *value = [userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey];
+    if (value != nil) {
+        return [value doubleValue];
+    } else {
+        return 0.0;
+    }
+}
+
+- (void)keyboardWillShowWithHeight:(CGFloat)height duration:(NSTimeInterval)duration {
+    __weak UIButton *nextButton = _nextButton;
+    __weak NSLayoutConstraint *nextButtonBottomConstraint = _nextButtonBottomConstraint;
+    __weak UIView *selfView = self.view;
+    [UIView animateWithDuration:duration delay:0.0 options:UIViewAnimationOptionCurveEaseIn animations:^{
+        if (nextButtonBottomConstraint != nil && nextButton != nil) {
+            nextButtonBottomConstraint.constant = -kNextButtonInset - height;
+            nextButton.alpha = 1.0;
+            if (selfView != nil) {
+                [selfView layoutIfNeeded];
+            }
+        }
+    } completion: nil];
+}
+
+- (void)keyboardWillHideWithDuration:(NSTimeInterval)duration {
+    __weak UIButton *nextButton = _nextButton;
+    __weak NSLayoutConstraint *nextButtonBottomConstraint = _nextButtonBottomConstraint;
+    __weak UIView *selfView = self.view;
+    [UIView animateWithDuration:duration delay:0.0 options:UIViewAnimationOptionCurveEaseIn animations:^{
+        if (nextButtonBottomConstraint != nil && nextButton != nil) {
+            nextButtonBottomConstraint.constant = -kNextButtonInset;
+            nextButton.alpha = 0;
+            if (selfView != nil) {
+                [selfView layoutIfNeeded];
+            }
+        }
+    } completion: nil];
 }
 
 @end

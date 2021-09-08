@@ -132,8 +132,8 @@ static const CGFloat kTOSViewHorizontalMargin = 16.0f;
     NSLayoutConstraint *horizontalConstraint = [NSLayoutConstraint constraintWithItem:stackView attribute:NSLayoutAttributeCenterX relatedBy:NSLayoutRelationEqual toItem:_scrollView attribute:NSLayoutAttributeCenterX multiplier:1 constant:0];
     NSLayoutConstraint *topConstraint = [NSLayoutConstraint constraintWithItem:stackView attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:_scrollView attribute:NSLayoutAttributeTop multiplier:1 constant:170];
     NSLayoutConstraint *bottomConstraint = [NSLayoutConstraint constraintWithItem:stackView attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:_scrollView attribute:NSLayoutAttributeBottom multiplier:1 constant:100];
-    NSLayoutConstraint *leadingConstraint = [NSLayoutConstraint constraintWithItem:stackView attribute:NSLayoutAttributeLeading relatedBy:NSLayoutRelationEqual toItem:_scrollView attribute:NSLayoutAttributeLeading multiplier:1 constant:32];
-    NSLayoutConstraint *trailingConstraint = [NSLayoutConstraint constraintWithItem:stackView attribute:NSLayoutAttributeTrailing relatedBy:NSLayoutRelationEqual toItem:_scrollView attribute:NSLayoutAttributeTrailing multiplier:1 constant:-32];
+    NSLayoutConstraint *leadingConstraint = [NSLayoutConstraint constraintWithItem:stackView attribute:NSLayoutAttributeLeading relatedBy:NSLayoutRelationEqual toItem:_scrollView attribute:NSLayoutAttributeLeading multiplier:1 constant:kSignInButtonHorizontalMargins];
+    NSLayoutConstraint *trailingConstraint = [NSLayoutConstraint constraintWithItem:stackView attribute:NSLayoutAttributeTrailing relatedBy:NSLayoutRelationEqual toItem:_scrollView attribute:NSLayoutAttributeTrailing multiplier:1 constant:-kSignInButtonHorizontalMargins];
     [_scrollView addConstraints:@[horizontalConstraint, topConstraint, leadingConstraint, trailingConstraint, bottomConstraint]];
     
     if ([[self.authUI authPickerStyle] headerImage] != nil) {
@@ -175,7 +175,7 @@ static const CGFloat kTOSViewHorizontalMargin = 16.0f;
         [buttonsStackView addArrangedSubview:providerButton];
         
         providerButton.translatesAutoresizingMaskIntoConstraints = NO;
-        NSLayoutConstraint *heightConstraint = [NSLayoutConstraint constraintWithItem:providerButton attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1 constant:44];
+        NSLayoutConstraint *heightConstraint = [NSLayoutConstraint constraintWithItem:providerButton attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1 constant:kSignInButtonHeight];
         [providerButton addConstraint: heightConstraint];
     }
     

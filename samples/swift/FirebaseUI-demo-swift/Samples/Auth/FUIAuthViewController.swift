@@ -95,6 +95,32 @@ class FUIAuthViewController: UITableViewController {
     authPickerStyle.privacyTOSFont = UIFont.systemFont(ofSize: 14.0)
     self.authUI?.authPickerStyle = authPickerStyle
     
+    let phoneEntryStyle = FUIPhoneEntryStyle()
+    phoneEntryStyle.backgroundColor = UIColor.white
+    phoneEntryStyle.navigationBarColor = UIColor.yellow;
+    phoneEntryStyle.navigationBarBackText = "";
+    phoneEntryStyle.navigationBarCancelImage = UIImage(named: "icon_close");
+    phoneEntryStyle.navigationBarTitleText = "Test Title";
+    phoneEntryStyle.navigationBarTitleColor = UIColor.red;
+    phoneEntryStyle.navigationBarTitleFont = UIFont.systemFont(ofSize: 18.0, weight: .regular);
+    phoneEntryStyle.navigationBarTintColor = UIColor.green;
+    phoneEntryStyle.textFieldTextColor = UIColor.red;
+    phoneEntryStyle.textFieldTextFont = UIFont.systemFont(ofSize: 18.0, weight: .regular);
+    phoneEntryStyle.textFieldDisclosureIndicatorImage = UIImage(named: "icon_next");
+    phoneEntryStyle.textFieldBackgroundColor = UIColor.yellow;
+    phoneEntryStyle.textFieldDescriptionColor = UIColor.red;
+    phoneEntryStyle.textFieldDescriptionFont = UIFont.systemFont(ofSize: 18.0, weight: .medium);
+    phoneEntryStyle.textFieldPlaceholderColor = UIColor.green;
+    phoneEntryStyle.textFieldPlaceholderFont = UIFont.systemFont(ofSize: 18.0, weight: .regular);
+    phoneEntryStyle.nextButtonImage = UIImage(named: "button_circle-next_active")
+    phoneEntryStyle.nextButtonDisabledImage = UIImage(named: "button_circle-next_deactive")
+    phoneEntryStyle.countryTextFieldDescriptionText = "COUNTRY"
+    phoneEntryStyle.phoneTextFieldDescriptionText = "NUMBER"
+    phoneEntryStyle.phoneTextFieldPlaceholderText = "Test Placeholder"
+    phoneEntryStyle.showPrivacyPolicy = false
+    phoneEntryStyle.showSeparatorView = false
+    self.authUI?.phoneEntryStyle = phoneEntryStyle
+    
     self.authUI?.tosurl = kFirebaseTermsOfService
     self.authUI?.privacyPolicyURL = kFirebasePrivacyPolicy
 

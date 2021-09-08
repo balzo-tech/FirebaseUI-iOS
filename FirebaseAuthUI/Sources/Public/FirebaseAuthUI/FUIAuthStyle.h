@@ -5,9 +5,6 @@
 //  Created by Leonardo Passeri on 03/09/21.
 //
 
-//#ifndef FUIAuthStyle_h
-//#define FUIAuthStyle_h
-
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FUIAuthSignInButtonStyle : NSObject <NSCopying>
@@ -32,5 +29,3 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 NS_ASSUME_NONNULL_END
-
-//#endif /* FUIAuthStyle_h */

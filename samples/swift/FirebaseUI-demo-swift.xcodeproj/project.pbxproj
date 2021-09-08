@@ -8,6 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		34E9BAAED739081127E2A5C7 /* Pods_FirebaseUI_demo_swiftTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1EAABCCB00386D7F6C4D2B34 /* Pods_FirebaseUI_demo_swiftTests.framework */; };
+		8923452A26EA1AA700936058 /* icon_close.png in Resources */ = {isa = PBXBuildFile; fileRef = 8923452926EA1AA700936058 /* icon_close.png */; };
+		8923452C26EA1AC500936058 /* icon_next.png in Resources */ = {isa = PBXBuildFile; fileRef = 8923452B26EA1AC500936058 /* icon_next.png */; };
+		89A437BE26E9267600CE2EC1 /* button_circle-next_active.png in Resources */ = {isa = PBXBuildFile; fileRef = 89A437BD26E9267600CE2EC1 /* button_circle-next_active.png */; };
+		89A437C026E9268800CE2EC1 /* button_circle-next_deactive.png in Resources */ = {isa = PBXBuildFile; fileRef = 89A437BF26E9268800CE2EC1 /* button_circle-next_deactive.png */; };
 		89B2924722568B1C00CEF7D7 /* twtrsymbol.png in Resources */ = {isa = PBXBuildFile; fileRef = 89B2924622568B1C00CEF7D7 /* twtrsymbol.png */; };
 		8D5F93B01D9B192D00D5A2E4 /* StorageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D5F93AF1D9B192D00D5A2E4 /* StorageViewController.swift */; };
 		8DABC9891D3D82D600453807 /* FUIAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DABC9881D3D82D600453807 /* FUIAppDelegate.swift */; };
@@ -55,6 +59,10 @@
 		42C759E7A704F2DB72EB93D1 /* Pods_FirebaseUI_demo_swift.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_FirebaseUI_demo_swift.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		4C083834B81BA3FD494E09CA /* Pods-FirebaseUI-demo-swiftTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FirebaseUI-demo-swiftTests.debug.xcconfig"; path = "Target Support Files/Pods-FirebaseUI-demo-swiftTests/Pods-FirebaseUI-demo-swiftTests.debug.xcconfig"; sourceTree = "<group>"; };
 		780AAD6E7213DF836B687628 /* Pods-FirebaseUI-demo-swiftTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FirebaseUI-demo-swiftTests.release.xcconfig"; path = "Target Support Files/Pods-FirebaseUI-demo-swiftTests/Pods-FirebaseUI-demo-swiftTests.release.xcconfig"; sourceTree = "<group>"; };
+		8923452926EA1AA700936058 /* icon_close.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon_close.png; sourceTree = "<group>"; };
+		8923452B26EA1AC500936058 /* icon_next.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon_next.png; sourceTree = "<group>"; };
+		89A437BD26E9267600CE2EC1 /* button_circle-next_active.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "button_circle-next_active.png"; sourceTree = "<group>"; };
+		89A437BF26E9268800CE2EC1 /* button_circle-next_deactive.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "button_circle-next_deactive.png"; sourceTree = "<group>"; };
 		89B2924622568B1C00CEF7D7 /* twtrsymbol.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = twtrsymbol.png; sourceTree = "<group>"; };
 		8D5F93AF1D9B192D00D5A2E4 /* StorageViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StorageViewController.swift; sourceTree = "<group>"; };
 		8DABC9851D3D82D600453807 /* FirebaseUI-demo-swift.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "FirebaseUI-demo-swift.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -306,6 +314,10 @@
 			isa = PBXGroup;
 			children = (
 				89B2924622568B1C00CEF7D7 /* twtrsymbol.png */,
+				89A437BD26E9267600CE2EC1 /* button_circle-next_active.png */,
+				89A437BF26E9268800CE2EC1 /* button_circle-next_deactive.png */,
+				8923452B26EA1AC500936058 /* icon_next.png */,
+				8923452926EA1AA700936058 /* icon_close.png */,
 				C30E94261EF8800D00F032B1 /* LaunchScreen.storyboard */,
 				C30E942E1EF8801500F032B1 /* Localizable.strings */,
 				C30E94281EF8800D00F032B1 /* Main.storyboard */,
@@ -504,9 +516,13 @@
 				C30E94291EF8800D00F032B1 /* LaunchScreen.storyboard in Resources */,
 				C39BC04A1DB812030060F6AF /* FUICustomPasswordSignInViewController.xib in Resources */,
 				C39BC03E1DB7F74B0060F6AF /* FUICustomAuthPickerViewController.xib in Resources */,
+				89A437BE26E9267600CE2EC1 /* button_circle-next_active.png in Resources */,
 				C3F23ECD1D80F3300020509F /* GoogleService-Info.plist in Resources */,
 				89B2924722568B1C00CEF7D7 /* twtrsymbol.png in Resources */,
 				C39BC0421DB811630060F6AF /* FUICustomEmailEntryViewController.xib in Resources */,
+				8923452C26EA1AC500936058 /* icon_next.png in Resources */,
+				89A437C026E9268800CE2EC1 /* button_circle-next_deactive.png in Resources */,
+				8923452A26EA1AA700936058 /* icon_close.png in Resources */,
 				C30E942B1EF8800D00F032B1 /* Main.storyboard in Resources */,
 				C30E942C1EF8801500F032B1 /* Localizable.strings in Resources */,
 				8DABC9901D3D82D600453807 /* Assets.xcassets in Resources */,

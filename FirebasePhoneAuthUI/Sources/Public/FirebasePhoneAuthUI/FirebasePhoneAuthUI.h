@@ -23,3 +23,4 @@ FOUNDATION_EXPORT double FirebasePhoneAuthUIVersionNumber;
 FOUNDATION_EXPORT const unsigned char FirebasePhoneAuthUIVersionString[];
 
 #import "FUIPhoneAuth.h"
+#import "FUIPhoneAuthStyle.h"
