@@ -30,7 +30,9 @@
 @class FUIPasswordVerificationViewController;
 @class FUIAuthSignInButtonStyle;
 @class FUIAuthPickerStyle;
+@class FUIPhoneStyle;
 @class FUIPhoneEntryStyle;
+@class FUIPhoneVerificationStyle;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -232,7 +234,9 @@ __attribute__((deprecated("Instead use authUI:didSignInWithAuthDataResult:error:
 
 @property(nonatomic, copy, nullable) FUIAuthSignInButtonStyle *phoneSignInButtonStyle;
 @property(nonatomic, copy, nullable) FUIAuthPickerStyle *authPickerStyle;
+@property(nonatomic, copy, nullable) FUIPhoneStyle *phoneStyle;
 @property(nonatomic, copy, nullable) FUIPhoneEntryStyle *phoneEntryStyle;
+@property(nonatomic, copy, nullable) FUIPhoneVerificationStyle *phoneVerificationStyle;
 
 
 

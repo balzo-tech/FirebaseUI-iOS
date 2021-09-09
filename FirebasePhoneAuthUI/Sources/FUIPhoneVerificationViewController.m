@@ -21,6 +21,7 @@
 #import <FirebaseAuthUI/FirebaseAuthUI.h>
 
 #import "FirebasePhoneAuthUI/Sources/Public/FirebasePhoneAuthUI/FUIPhoneAuth.h"
+#import "FirebasePhoneAuthUI/Sources/Public/FirebasePhoneAuthUI/FUIPhoneAuthStyle.h"
 #import "FirebasePhoneAuthUI/Sources/FUICodeField.h"
 #import "FirebasePhoneAuthUI/Sources/FUIPhoneAuthStrings.h"
 #import "FirebasePhoneAuthUI/Sources/FUIPhoneAuth_Internal.h"
@@ -38,6 +39,8 @@ static NSTimeInterval FUIDelayInSecondsBeforeShowingResendConfirmationCode = 60;
 /** Regex pattern that matches for a TOS style link. For example: [Terms]. */
 static NSString *const kLinkPlaceholderPattern = @"\\[([^\\]]+)\\]";
 
+static const CGFloat kNextButtonInset = 16.0f;
+
 @interface FUIPhoneVerificationViewController () <FUICodeFieldDelegate, FIRAuthUIDelegate>
 @end
 
@@ -53,6 +56,9 @@ static NSString *const kLinkPlaceholderPattern = @"\\[([^\\]]+)\\]";
   NSTimer *_resendConfirmationCodeTimer;
   NSTimeInterval _resendConfirmationCodeSeconds;
   NSString *_phoneNumber;
+    FUIPhoneVerificationStyle *_phoneVerificationStyle;
+    NSLayoutConstraint *_nextButtonBottomConstraint;
+    UIButton *_nextButton;
 }
 
 - (instancetype)initWithAuthUI:(FUIAuth *)authUI
@@ -75,17 +81,48 @@ static NSString *const kLinkPlaceholderPattern = @"\\[([^\\]]+)\\]";
                          bundle:nibBundleOrNil
                          authUI:authUI];
   if (self) {
-    self.title = FUIPhoneAuthLocalizedString(kPAStr_VerifyPhoneTitle);
+    self.title = [_phoneVerificationStyle navigationBarTitleText] ?: FUIPhoneAuthLocalizedString(kPAStr_VerifyPhoneTitle);
     _verificationID = [verificationID copy];
     _phoneNumber = [phoneNumber copy];
 
-    [_resendCodeButton setTitle:FUIPhoneAuthLocalizedString(kPAStr_ResendCode)
-                       forState:UIControlStateNormal];
+      NSMutableDictionary<NSAttributedStringKey, id> *resendCodeButtonTextAttributes = [NSMutableDictionary new];
+      if ([_phoneVerificationStyle resendButtonColor] != nil) {
+          [resendCodeButtonTextAttributes setObject:[_phoneVerificationStyle resendButtonColor] forKey:NSForegroundColorAttributeName];
+      }
+      if ([_phoneVerificationStyle resendButtonFont] != nil) {
+          [resendCodeButtonTextAttributes setObject:[_phoneVerificationStyle resendButtonFont] forKey:NSFontAttributeName];
+      }
+      if (_phoneVerificationStyle != nil && _phoneVerificationStyle.resendButtonUnderlined) {
+          [resendCodeButtonTextAttributes setObject:[NSNumber numberWithInt:NSUnderlineStyleSingle] forKey:NSUnderlineStyleAttributeName];
+      }
+      NSString *resendCodeButtonText = [NSString stringWithFormat:[_phoneVerificationStyle resendButtonText] ?: FUIPhoneAuthLocalizedString(kPAStr_EnterCodeDescription),
+                                        @(_codeField.codeLength)];
+      
+      NSAttributedString *attributedResendCodeButtonText = [[NSAttributedString alloc] initWithString:resendCodeButtonText attributes:resendCodeButtonTextAttributes];
+      [_resendCodeButton setAttributedTitle:attributedResendCodeButtonText forState:UIControlStateNormal];
+      
     _actionDescriptionLabel.text =
-        [NSString stringWithFormat:FUIPhoneAuthLocalizedString(kPAStr_EnterCodeDescription),
+        [NSString stringWithFormat:[_phoneVerificationStyle instructionsText] ?: FUIPhoneAuthLocalizedString(kPAStr_EnterCodeDescription),
              @(_codeField.codeLength)];
+      if ([_phoneVerificationStyle instructionsFont]) {
+          _actionDescriptionLabel.font = [_phoneVerificationStyle instructionsFont];
+      }
+      if ([_phoneVerificationStyle instructionsColor]) {
+          _actionDescriptionLabel.textColor = [_phoneVerificationStyle instructionsColor];
+      }
+      
     [_phoneNumberButton setTitle:_phoneNumber forState:UIControlStateNormal];
+      if ([_phoneVerificationStyle phoneNumberColor]) {
+          [_phoneNumberButton setTitleColor:[_phoneVerificationStyle phoneNumberColor] forState:UIControlStateNormal];
+      }
+      if ([_phoneVerificationStyle phoneNumberFont]) {
+          [[_phoneNumberButton titleLabel] setFont:[_phoneVerificationStyle phoneNumberFont]];
+      }
 
+      if ([_phoneVerificationStyle codeTextFieldColor]) {
+          _codeField.textColor = [_phoneVerificationStyle codeTextFieldColor];
+      }
+      
     [_codeField becomeFirstResponder];
     [self startResendTimer];
   }
@@ -95,15 +132,40 @@ static NSString *const kLinkPlaceholderPattern = @"\\[([^\\]]+)\\]";
 - (void)viewDidLoad {
   [super viewDidLoad];
 
-  UIBarButtonItem *nextButtonItem =
-      [FUIAuthBaseViewController barItemWithTitle:FUIPhoneAuthLocalizedString(kPAStr_Next)
-                                           target:self
-                                           action:@selector(next)];
-  nextButtonItem.accessibilityIdentifier = kNextButtonAccessibilityID;
-  self.navigationItem.rightBarButtonItem = nextButtonItem;
-  self.navigationItem.rightBarButtonItem.enabled = NO;
+    _phoneVerificationStyle = [[self authUI] phoneVerificationStyle];
+    
+    if ([_phoneVerificationStyle nextButtonImage] == nil) {
+        UIBarButtonItem *nextButtonItem =
+        [FUIAuthBaseViewController barItemWithTitle:FUIPhoneAuthLocalizedString(kPAStr_Next)
+                                             target:self
+                                             action:@selector(next)];
+        nextButtonItem.accessibilityIdentifier = kNextButtonAccessibilityID;
+        self.navigationItem.rightBarButtonItem = nextButtonItem;
+    }
+        
   _tosView.authUI = self.authUI;
   [_tosView useFooterMessage];
+    
+    if (_phoneVerificationStyle != nil) {
+        [_tosView setHidden:!_phoneVerificationStyle.showPrivacyPolicy];
+        if ([_phoneVerificationStyle backgroundColor] != nil) {
+            self.view.backgroundColor = _phoneVerificationStyle.backgroundColor;
+        }
+        if (_phoneVerificationStyle.nextButtonImage != nil) {
+            _nextButton = [UIButton new];
+            [_nextButton setImage:_phoneVerificationStyle.nextButtonImage forState:UIControlStateNormal];
+            if (_phoneVerificationStyle.nextButtonDisabledImage != nil) {
+                [_nextButton setImage:_phoneVerificationStyle.nextButtonDisabledImage forState:UIControlStateDisabled];
+            }
+            [self.view addSubview:_nextButton];
+            [_nextButton addTarget:self action:@selector(next) forControlEvents:UIControlEventTouchUpInside];
+            _nextButton.translatesAutoresizingMaskIntoConstraints = NO;
+            _nextButtonBottomConstraint = [NSLayoutConstraint constraintWithItem:_nextButton attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self.view attribute:NSLayoutAttributeBottom multiplier:1 constant:kNextButtonInset];
+            NSLayoutConstraint *trailingConstraint = [NSLayoutConstraint constraintWithItem:_nextButton attribute:NSLayoutAttributeTrailing relatedBy:NSLayoutRelationEqual toItem:self.view attribute:NSLayoutAttributeTrailing multiplier:1 constant:-kNextButtonInset];
+            [self.view addConstraints:@[_nextButtonBottomConstraint, trailingConstraint]];
+        }
+    }
+    [self setNextButtonEnabled:NO];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -117,11 +179,11 @@ static NSString *const kLinkPlaceholderPattern = @"\\[([^\\]]+)\\]";
 }
 
 - (void)entryIsIncomplete {
-  self.navigationItem.rightBarButtonItem.enabled = NO;
+    [self setNextButtonEnabled:NO];
 }
 
 - (void) entryIsCompletedWithCode:(NSString *)code {
-  self.navigationItem.rightBarButtonItem.enabled = YES;
+    [self setNextButtonEnabled:YES];
 }
 
 #pragma mark - Actions
@@ -184,13 +246,13 @@ static NSString *const kLinkPlaceholderPattern = @"\\[([^\\]]+)\\]";
 
   [self incrementActivity];
   [_codeField resignFirstResponder];
-  self.navigationItem.rightBarButtonItem.enabled = NO;
+    [self setNextButtonEnabled:NO];
   FUIPhoneAuth *delegate = [self.authUI providerWithID:FIRPhoneAuthProviderID];
   [delegate callbackWithCredential:credential
                              error:nil
                             result:^(FIRUser *_Nullable user, NSError *_Nullable error) {
     [self decrementActivity];
-    self.navigationItem.rightBarButtonItem.enabled = YES;
+      [self setNextButtonEnabled:YES];
     if (!error ||
         error.code == FUIAuthErrorCodeUserCancelledSignIn ||
         error.code == FUIAuthErrorCodeMergeConflict) {
@@ -212,8 +274,7 @@ static NSString *const kLinkPlaceholderPattern = @"\\[([^\\]]+)\\]";
                         change:(nullable NSDictionary<NSKeyValueChangeKey, id> *)change
                        context:(nullable void *)context {
   if (object == _codeField) {
-    self.navigationItem.rightBarButtonItem.enabled =
-        _codeField.codeEntry.length == _codeField.codeLength;
+      [self setNextButtonEnabled:(_codeField.codeEntry.length == _codeField.codeLength)];
   }
 }
 
@@ -276,9 +337,28 @@ static NSString *const kLinkPlaceholderPattern = @"\\[([^\\]]+)\\]";
   NSInteger seconds = (NSInteger)round(_resendConfirmationCodeSeconds) % 60;
   NSString *formattedTime = [NSString stringWithFormat:@"%ld:%02ld", (long)minutes, (long)seconds];
 
-  _resendConfirmationCodeTimerLabel.text =
-      [NSString stringWithFormat:FUIPhoneAuthLocalizedString(kPAStr_ResendCodeTimer),
-           formattedTime];
+    NSMutableDictionary<NSAttributedStringKey, id> *resendCodeTimerTextAttributes = [NSMutableDictionary new];
+    if ([_phoneVerificationStyle resendCounterColor] != nil) {
+        [resendCodeTimerTextAttributes setObject:[_phoneVerificationStyle resendCounterColor] forKey:NSForegroundColorAttributeName];
+    }
+    if ([_phoneVerificationStyle resendCounterFont] != nil) {
+        [resendCodeTimerTextAttributes setObject:[_phoneVerificationStyle resendCounterFont] forKey:NSFontAttributeName];
+    }
+    if (_phoneVerificationStyle != nil && _phoneVerificationStyle.resendCounterUnderlined) {
+        [resendCodeTimerTextAttributes setObject:[NSNumber numberWithInt:NSUnderlineStyleSingle] forKey:NSUnderlineStyleAttributeName];
+    }
+    
+    NSString *resendCodeTimerText = [NSString stringWithFormat:[_phoneVerificationStyle resendCounterText] ?: FUIPhoneAuthLocalizedString(kPAStr_ResendCodeTimer),
+                                      formattedTime];
+    
+    NSAttributedString *attributedResendCodeTimerText = [[NSAttributedString alloc] initWithString:resendCodeTimerText attributes:resendCodeTimerTextAttributes];
+    
+    _resendConfirmationCodeTimerLabel.attributedText = attributedResendCodeTimerText;
+}
+
+- (void)setNextButtonEnabled:(BOOL)enabled {
+    self.navigationItem.rightBarButtonItem.enabled = enabled;
+    [_nextButton setEnabled:enabled];
 }
 
 #pragma mark - UIKeyboard observer methods
@@ -287,6 +367,9 @@ static NSString *const kLinkPlaceholderPattern = @"\\[([^\\]]+)\\]";
   [[NSNotificationCenter defaultCenter] addObserver:self
                                            selector:@selector(keyboardWasShown:)
                                                name:UIKeyboardDidShowNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(keyboardWillShow:)
+                                                 name:UIKeyboardWillShowNotification object:nil];
   [[NSNotificationCenter defaultCenter] addObserver:self
                                            selector:@selector(keyboardWillBeHidden:)
                                                name:UIKeyboardWillHideNotification object:nil];
@@ -334,6 +417,64 @@ static NSString *const kLinkPlaceholderPattern = @"\\[([^\\]]+)\\]";
   _scrollView.scrollIndicatorInsets = contentInsets;
 
   [UIView commitAnimations];
+    
+    NSTimeInterval duration = [self keyboardAnimationDurationFromUserInfo:aNotification.userInfo];
+    [self keyboardWillHideWithDuration:duration];
+}
+
+- (void)keyboardWillShow:(NSNotification *)notification {
+    if (notification.userInfo != nil) {
+        
+        CGFloat height = [self keyboardHeightFromUserInfo:notification.userInfo];
+        NSTimeInterval duration = [self keyboardAnimationDurationFromUserInfo:notification.userInfo];
+        [self keyboardWillShowWithHeight:height duration:duration];
+    }
+}
+
+-(CGFloat) keyboardHeightFromUserInfo:(NSDictionary *)userInfo {
+    NSValue *value = [userInfo objectForKey:UIKeyboardFrameEndUserInfoKey];
+    if (value != nil) {
+        return [value CGRectValue].size.height;
+    } else {
+        return 0.0;
+    }
+}
+
+-(NSTimeInterval) keyboardAnimationDurationFromUserInfo:(NSDictionary *)userInfo {
+    NSNumber *value = [userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey];
+    if (value != nil) {
+        return [value doubleValue];
+    } else {
+        return 0.0;
+    }
+}
+
+- (void)keyboardWillShowWithHeight:(CGFloat)height duration:(NSTimeInterval)duration {
+    __weak UIButton *nextButton = _nextButton;
+    __weak NSLayoutConstraint *nextButtonBottomConstraint = _nextButtonBottomConstraint;
+    __weak UIView *selfView = self.view;
+    [UIView animateWithDuration:duration delay:0.0 options:UIViewAnimationOptionCurveEaseIn animations:^{
+        if (nextButtonBottomConstraint != nil && nextButton != nil) {
+            nextButtonBottomConstraint.constant = -kNextButtonInset - height;
+            if (selfView != nil) {
+                [selfView layoutIfNeeded];
+            }
+        }
+    } completion: nil];
+}
+
+- (void)keyboardWillHideWithDuration:(NSTimeInterval)duration {
+    __weak UIButton *nextButton = _nextButton;
+    __weak NSLayoutConstraint *nextButtonBottomConstraint = _nextButtonBottomConstraint;
+    __weak UIView *selfView = self.view;
+    [UIView animateWithDuration:duration delay:0.0 options:UIViewAnimationOptionCurveEaseIn animations:^{
+        if (nextButtonBottomConstraint != nil && nextButton != nil) {
+            nextButtonBottomConstraint.constant = -kNextButtonInset;
+            if (selfView != nil) {
+                [selfView layoutIfNeeded];
+            }
+        }
+    } completion: nil];
 }
 
 @end

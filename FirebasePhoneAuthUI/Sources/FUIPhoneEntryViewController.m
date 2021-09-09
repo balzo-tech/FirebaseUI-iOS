@@ -74,6 +74,7 @@ static const CGFloat kNextButtonInset = 16.0f;
   __weak IBOutlet FUIPrivacyAndTermsOfServiceView *_tosView;
   FUICountryCodes *_countryCodes;
   FUIPhoneNumber *_phoneNumber;
+    FUIPhoneStyle *_phoneStyle;
     FUIPhoneEntryStyle *_phoneEntryStyle;
     NSLayoutConstraint *_nextButtonBottomConstraint;
     UIButton *_nextButton;
@@ -132,6 +133,7 @@ static const CGFloat kNextButtonInset = 16.0f;
 - (void)viewDidLoad {
   [super viewDidLoad];
     
+    _phoneStyle = [[self authUI] phoneStyle];
     _phoneEntryStyle = [[self authUI] phoneEntryStyle];
     
     if ([_phoneEntryStyle nextButtonImage] == nil) {
@@ -143,7 +145,7 @@ static const CGFloat kNextButtonInset = 16.0f;
         self.navigationItem.rightBarButtonItem = nextButtonItem;
     }
 
-  NSString *backLabel = [_phoneEntryStyle navigationBarBackText] ?: FUIPhoneAuthLocalizedString(kPAStr_Back);
+  NSString *backLabel = [_phoneStyle navigationBarBackText] ?: FUIPhoneAuthLocalizedString(kPAStr_Back);
   UIBarButtonItem *backItem = [[UIBarButtonItem alloc] initWithTitle:backLabel
                                                                style:UIBarButtonItemStylePlain
                                                               target:nil
@@ -160,7 +162,7 @@ static const CGFloat kNextButtonInset = 16.0f;
             self.view.backgroundColor = _phoneEntryStyle.backgroundColor;
             _tableView.backgroundColor = _phoneEntryStyle.backgroundColor;
         }
-        if (_phoneEntryStyle.showPrivacyPolicy == NO) {
+        if (_phoneEntryStyle.showSeparatorView == NO) {
             _tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
         }
         if (_phoneEntryStyle.nextButtonImage != nil) {
@@ -183,16 +185,20 @@ static const CGFloat kNextButtonInset = 16.0f;
   [super viewWillAppear:animated];
   if (self.navigationController.viewControllers.firstObject == self) {
     if (self.authUI.providers.count != 1){
-      UIBarButtonItem *cancelBarButton =
-        [[UIBarButtonItem alloc] initWithTitle:[_phoneEntryStyle navigationBarBackText] ?: FUILocalizedString(kStr_Back)
-                                       style:UIBarButtonItemStylePlain
-                                      target:self
-                                      action:@selector(cancelAuthorization)];
+        UIBarButtonItem *cancelBarButton;
+        if ([_phoneStyle navigationBarCancelImage] != nil) {
+            cancelBarButton = [[UIBarButtonItem alloc] initWithImage:_phoneStyle.navigationBarCancelImage style:UIBarButtonItemStylePlain target:self action:@selector(cancelAuthorization)];
+        } else {
+            cancelBarButton = [[UIBarButtonItem alloc] initWithTitle:[_phoneStyle navigationBarBackText] ?: FUILocalizedString(kStr_Back)
+                                           style:UIBarButtonItemStylePlain
+                                          target:self
+                                          action:@selector(cancelAuthorization)];
+        }
       self.navigationItem.leftBarButtonItem = cancelBarButton;
     } else if (!self.authUI.shouldHideCancelButton) {
         UIBarButtonItem *cancelBarButton;
-        if ([_phoneEntryStyle navigationBarCancelImage] != nil) {
-            cancelBarButton = [[UIBarButtonItem alloc] initWithImage:_phoneEntryStyle.navigationBarCancelImage style:UIBarButtonItemStylePlain target:self action:@selector(cancelAuthorization)];
+        if ([_phoneStyle navigationBarCancelImage] != nil) {
+            cancelBarButton = [[UIBarButtonItem alloc] initWithImage:_phoneStyle.navigationBarCancelImage style:UIBarButtonItemStylePlain target:self action:@selector(cancelAuthorization)];
         } else {
             cancelBarButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
                                                                             target:self
@@ -201,7 +207,7 @@ static const CGFloat kNextButtonInset = 16.0f;
         self.navigationItem.leftBarButtonItem = cancelBarButton;
     }
     self.navigationItem.backBarButtonItem =
-        [[UIBarButtonItem alloc] initWithTitle:[_phoneEntryStyle navigationBarBackText] ?: FUILocalizedString(kStr_Back)
+        [[UIBarButtonItem alloc] initWithTitle:[_phoneStyle navigationBarBackText] ?: FUILocalizedString(kStr_Back)
                                          style:UIBarButtonItemStylePlain
                                         target:nil
                                         action:nil];
@@ -211,20 +217,20 @@ static const CGFloat kNextButtonInset = 16.0f;
         self.modalInPresentation = YES;
       }
     }
-      if ([_phoneEntryStyle navigationBarColor] != nil) {
+      if ([_phoneStyle navigationBarColor] != nil) {
           [self.navigationController.navigationBar setTranslucent: NO];
-          self.navigationController.navigationBar.backgroundColor = _phoneEntryStyle.navigationBarColor;
-          self.navigationController.navigationBar.barTintColor = _phoneEntryStyle.navigationBarColor;
+          self.navigationController.navigationBar.backgroundColor = _phoneStyle.navigationBarColor;
+          self.navigationController.navigationBar.barTintColor = _phoneStyle.navigationBarColor;
       }
-      if ([_phoneEntryStyle navigationBarTintColor] != nil) {
-          self.navigationController.navigationBar.tintColor = _phoneEntryStyle.navigationBarTintColor;
+      if ([_phoneStyle navigationBarTintColor] != nil) {
+          self.navigationController.navigationBar.tintColor = _phoneStyle.navigationBarTintColor;
       }
       NSMutableDictionary<NSAttributedStringKey, id> *titleTextAttributes = [NSMutableDictionary new];
-      if ([_phoneEntryStyle navigationBarTitleColor] != nil) {
-          [titleTextAttributes setObject:[_phoneEntryStyle navigationBarTitleColor] forKey:NSForegroundColorAttributeName];
+      if ([_phoneStyle navigationBarTitleColor] != nil) {
+          [titleTextAttributes setObject:[_phoneStyle navigationBarTitleColor] forKey:NSForegroundColorAttributeName];
       }
-      if ([_phoneEntryStyle navigationBarTitleFont] != nil) {
-          [titleTextAttributes setObject:[_phoneEntryStyle navigationBarTitleFont] forKey:NSFontAttributeName];
+      if ([_phoneStyle navigationBarTitleFont] != nil) {
+          [titleTextAttributes setObject:[_phoneStyle navigationBarTitleFont] forKey:NSFontAttributeName];
       }
       self.navigationController.navigationBar.titleTextAttributes = titleTextAttributes;
   }
@@ -518,7 +524,6 @@ static const CGFloat kNextButtonInset = 16.0f;
     [UIView animateWithDuration:duration delay:0.0 options:UIViewAnimationOptionCurveEaseIn animations:^{
         if (nextButtonBottomConstraint != nil && nextButton != nil) {
             nextButtonBottomConstraint.constant = -kNextButtonInset - height;
-            nextButton.alpha = 1.0;
             if (selfView != nil) {
                 [selfView layoutIfNeeded];
             }
@@ -533,7 +538,6 @@ static const CGFloat kNextButtonInset = 16.0f;
     [UIView animateWithDuration:duration delay:0.0 options:UIViewAnimationOptionCurveEaseIn animations:^{
         if (nextButtonBottomConstraint != nil && nextButton != nil) {
             nextButtonBottomConstraint.constant = -kNextButtonInset;
-            nextButton.alpha = 0;
             if (selfView != nil) {
                 [selfView layoutIfNeeded];
             }
