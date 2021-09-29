@@ -102,6 +102,7 @@ class FUIAuthViewController: UITableViewController {
     phoneStyle.navigationBarTitleColor = UIColor.red
     phoneStyle.navigationBarTitleFont = UIFont.systemFont(ofSize: 18.0, weight: .regular)
     phoneStyle.navigationBarTintColor = UIColor.green
+    phoneStyle.navigationBarRemoveShadow = true
     self.authUI?.phoneStyle = phoneStyle
     
     let phoneEntryStyle = FUIPhoneEntryStyle()

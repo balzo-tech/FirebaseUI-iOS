@@ -13,6 +13,7 @@
 @property(nonatomic, copy, nullable) UIColor *navigationBarTitleColor;
 @property(nonatomic, copy, nullable) UIFont *navigationBarTitleFont;
 @property(nonatomic, copy, nullable) UIColor *navigationBarTintColor;
+@property(nonatomic, assign) BOOL navigationBarRemoveShadow;
 
 @end
 

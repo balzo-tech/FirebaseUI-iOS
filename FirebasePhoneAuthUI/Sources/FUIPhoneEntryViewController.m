@@ -221,6 +221,30 @@ static const CGFloat kNextButtonInset = 16.0f;
           [self.navigationController.navigationBar setTranslucent: NO];
           self.navigationController.navigationBar.backgroundColor = _phoneStyle.navigationBarColor;
           self.navigationController.navigationBar.barTintColor = _phoneStyle.navigationBarColor;
+          if ([_phoneStyle navigationBarRemoveShadow]) {
+              self.navigationController.navigationBar.shadowImage = [UIImage new];
+          }
+          if (@available(iOS 15, *)) {
+              UINavigationBarAppearance *appearance = [UINavigationBarAppearance new];
+              [appearance configureWithOpaqueBackground];
+              appearance.backgroundColor = _phoneStyle.navigationBarColor;
+              if ([_phoneStyle navigationBarRemoveShadow]) {
+                  appearance.shadowColor = UIColor.clearColor;
+              }
+              self.navigationController.navigationBar.standardAppearance = appearance;
+              self.navigationController.navigationBar.scrollEdgeAppearance = appearance;
+              
+          }
+      } else if ([_phoneStyle navigationBarRemoveShadow]) {
+          self.navigationController.navigationBar.shadowImage = [UIImage new];
+          if (@available(iOS 15, *)) {
+              UINavigationBarAppearance *appearance = [UINavigationBarAppearance new];
+              [appearance configureWithOpaqueBackground];
+              appearance.shadowColor = UIColor.clearColor;
+              self.navigationController.navigationBar.standardAppearance = appearance;
+              self.navigationController.navigationBar.scrollEdgeAppearance = appearance;
+              
+          }
       }
       if ([_phoneStyle navigationBarTintColor] != nil) {
           self.navigationController.navigationBar.tintColor = _phoneStyle.navigationBarTintColor;

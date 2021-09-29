@@ -121,6 +121,7 @@ static const CGFloat kTOSViewHorizontalMargin = 16.0f;
     if (self.authUI.authPickerStyle) {
         self.view.backgroundColor = self.authUI.authPickerStyle.backgroundColor;
         _contentView.backgroundColor = UIColor.clearColor;
+        _scrollView.backgroundColor = UIColor.clearColor;
     }
     
     UIStackView *stackView = [UIStackView new];

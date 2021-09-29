@@ -17,6 +17,7 @@
     [newStyle setNavigationBarTitleColor:[self navigationBarTitleColor]];
     [newStyle setNavigationBarTitleFont:[self navigationBarTitleFont]];
     [newStyle setNavigationBarTintColor:[self navigationBarTintColor]];
+    [newStyle setNavigationBarRemoveShadow:[self navigationBarRemoveShadow]];
     return newStyle;
 }
 
