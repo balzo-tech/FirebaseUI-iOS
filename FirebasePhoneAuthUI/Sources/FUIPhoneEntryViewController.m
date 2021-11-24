@@ -279,6 +279,12 @@ static const CGFloat kNextButtonInset = 16.0f;
     [self showAlertWithMessage:FUIPhoneAuthLocalizedString(kPAStr_EmptyPhoneNumber)];
     return;
   }
+    
+  // Removing non numerical characters to increase matching chance with phone book numbers.
+  phoneNumber = [phoneNumber stringByReplacingOccurrencesOfString:@"[ \\-().]"
+                                                       withString:@""
+                                                          options:NSRegularExpressionSearch
+                                                            range:NSMakeRange(0, phoneNumber.length)];
 
   [_phoneNumberField resignFirstResponder];
   [self incrementActivity];
